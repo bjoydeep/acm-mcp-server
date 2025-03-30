@@ -1,20 +1,41 @@
-# acm-mcp-server
+# ACM MCP SERVER
 
-This repository aims to build the MCP server for Advanced Cluster Management (ACM). It includes the following features:
+This repository aims to build the **MCP server** for **Red Hat Advanced Cluster Management (ACM)**. It includes the following features:
 
-1. Kubernetes Cluster Awareness(Based-on `kubectl`)
+### 🛠️ MCP Tools
 
-    ✅ Retrieve resources from the hub cluster (current context)
+#### Kubernetes Cluster Awareness (based on `kubectl`)
 
-    ✅ Retrieve resources from managed clusters
+- ✅ Retrieve resources from the **hub cluster** (current context)  
+- ✅ Retrieve resources from **managed clusters**  
+- ✅ Connect to a **managed cluster** using a specified `ClusterRole`
 
-    ✅ Connect to a managed clusters using a specific ClusterRole
+#### ACM Search Integration (as an info tool or MCP resource provider)
 
-2. Embed ACM Search as a Tool for Messaging
-    - Integrate ACM search into the MCP server to enable message handling and routing
+- Embed **ACM Search** into the MCP server to enable message-based handling and routing
 
-3. Prompt Templates for ACM
-    - Provide reusable prompt templates tailored for ACM-related tasks and interactions, streamlining interactions and automations
+### 📦 Prompt Templates for ACM *(Planning)*
 
-4. ACM Documentation Resources
-    - Reference official ACM documentation and related resources to support development and integration
+- Provide reusable prompt templates tailored for ACM tasks, streamlining agent interaction and automation
+
+### 📚 MCP Resources for ACM *(Planning)*
+
+- Reference official ACM documentation and related resources to support development and integration
+
+### 🚀 How to Use
+
+Configure the server using the following snippet:
+
+```json
+{
+  "mcpServers": {
+    "acm-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "acm-mcp-server@latest"
+      ]
+    }
+  }
+}
+```
