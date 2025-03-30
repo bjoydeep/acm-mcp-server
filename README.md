@@ -10,6 +10,8 @@ This repository aims to build the **MCP server** for **Red Hat Advanced Cluster 
 - ✅ Retrieve resources from **managed clusters**  
 - ✅ Connect to a **managed cluster** using a specified `ClusterRole`
 
+  ![alt text](images/tools.png)
+
 #### ACM Search Integration (as an info tool or MCP resource provider)
 
 - Embed **ACM Search** into the MCP server to enable message-based handling and routing
