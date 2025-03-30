@@ -3,9 +3,12 @@
 This repository aims to build the MCP server for Advanced Cluster Management (ACM). It includes the following features:
 
 1. Kubernetes Cluster Awareness(Based-on `kubectl`)
+
     ✅ Retrieve resources from the hub cluster (current context)
+
     ✅ Retrieve resources from managed clusters
-    ✅ Connect to a managed clusters using a specific role
+
+    ✅ Connect to a managed clusters using a specific ClusterRole
 
 2. Embed ACM Search as a Tool for Messaging
     - Integrate ACM search into the MCP server to enable message handling and routing
