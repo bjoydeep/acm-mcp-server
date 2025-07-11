@@ -21,9 +21,11 @@ export const kubectlDesc = "Securely run a kubectl command or apply YAML. Provid
 export const kubectlArgs = {
   command: z
     .string()
+    .optional()
     .describe("The full kubectl command to execute. Must start with 'kubectl'."),
   yaml: z
     .string()
+    .optional()
     .describe("YAML configuration to apply, provided as a string."),
   cluster: z
     .string()

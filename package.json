@@ -2,14 +2,18 @@
   "name": "acm-mcp-server",
   "version": "1.0.1",
   "description": "This repository aims to build the MCP server for Advanced Cluster Management (ACM).",
-  "private": false, 
+  "private": false,
   "bin": {
     "acm-mcp-server": "./build/index.js"
   },
   "files": [
     "build"
   ],
-  "keywords": ["ACM", "MCP", "kubernetes"],
+  "keywords": [
+    "ACM",
+    "MCP",
+    "kubernetes"
+  ],
   "scripts": {
     "build": "tsc && cp -r src/resources/schemas build/resources/ && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
@@ -18,7 +22,7 @@
   },
   "dependencies": {
     "@kubernetes/client-node": "^1.0.0",
-    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@modelcontextprotocol/sdk": "^1.15.1",
     "axios": "^1.9.0",
     "dayjs": "^1.11.13",
     "zod": "^3.25.61"

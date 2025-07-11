@@ -3,10 +3,20 @@ import * as k8s from '@kubernetes/client-node';
 import { z } from "zod";
 import { generateKubeconfig } from "../utils/kubeconfig";
 
-// client from env KUBECONFIG
-const kc = new k8s.KubeConfig()
-kc.loadFromDefault()
-const client = k8s.KubernetesObjectApi.makeApiClient(kc);
+// Initialize client with error handling
+let client: k8s.KubernetesObjectApi | null = null;
+let kc: k8s.KubeConfig | null = null;
+
+try {
+  // client from env KUBECONFIG
+  kc = new k8s.KubeConfig();
+  kc.loadFromDefault();
+  client = k8s.KubernetesObjectApi.makeApiClient(kc);
+  console.error("Kubernetes client initialized successfully");
+} catch (error) {
+  console.error("Kubernetes client initialization failed:", (error as Error).message);
+  console.error("Tools requiring cluster access will return appropriate error messages");
+}
 
 // clusterName to APIServer
 let clusterToServerAPIMap: Map<string, string> = new Map()
@@ -16,51 +26,71 @@ export const listClusterDesc = "Retrieves a list of Kubernetes clusters (also kn
 export const listClustersArgs = {}
 
 export async function listClusters({ }): Promise<CallToolResult> {
-  const response = await client.list<k8s.KubernetesObject>("cluster.open-cluster-management.io/v1", "ManagedCluster")
-  if (!response || response.items.length == 0) {
-    console.warn("no managed clusters on the current cluster")
+  if (!client) {
     return {
       content: [{
         type: "text",
-        text: "no managed clusters available on the current cluster"
+        text: "No Kubernetes cluster connection available. Please ensure KUBECONFIG is set and cluster is accessible."
       }],
+      isErrored: true
     }
   }
 
-  clusterToServerAPIMap = new Map(
-    response.items.map((item: any) => {
-      const name: string = item.metadata?.name;
-      const server: string = item.spec?.managedClusterClientConfigs?.[0]?.url;
-      return [name, server];
-    })
-  );
+  try {
+    const response = await client.list<k8s.KubernetesObject>("cluster.open-cluster-management.io/v1", "ManagedCluster")
+    if (!response || response.items.length == 0) {
+      console.warn("no managed clusters on the current cluster")
+      return {
+        content: [{
+          type: "text",
+          text: "no managed clusters available on the current cluster"
+        }],
+      }
+    }
 
-  // Format table header
-  let result = `NAME       HUB ACCEPTED   MANAGED CLUSTER URLS                                                            JOINED   AVAILABLE   AGE\n`;
+    clusterToServerAPIMap = new Map(
+      response.items.map((item: any) => {
+        const name: string = item.metadata?.name;
+        const server: string = item.spec?.managedClusterClientConfigs?.[0]?.url;
+        return [name, server];
+      })
+    );
 
-  // Process each cluster and format the output
-  response.items.forEach((item: any) => {
-    const name: string = item.metadata?.name || "Unknown";
-    const hubAccepted: string = item.spec?.hubAcceptsClient ? "true" : "false";
-    const server: string = item.spec?.managedClusterClientConfigs?.[0]?.url || "N/A";
+    // Format table header
+    let result = `NAME       HUB ACCEPTED   MANAGED CLUSTER URLS                                                            JOINED   AVAILABLE   AGE\n`;
 
-    // Extract conditions
-    const joinedCondition = item.status?.conditions?.find((c: any) => c.type === "ManagedClusterJoined")?.status || "False";
-    const availableCondition = item.status?.conditions?.find((c: any) => c.type === "ManagedClusterConditionAvailable")?.status || "False";
+    // Process each cluster and format the output
+    response.items.forEach((item: any) => {
+      const name: string = item.metadata?.name || "Unknown";
+      const hubAccepted: string = item.spec?.hubAcceptsClient ? "true" : "false";
+      const server: string = item.spec?.managedClusterClientConfigs?.[0]?.url || "N/A";
 
-    // Calculate cluster age
-    const creationTimestamp = item.metadata?.creationTimestamp;
-    const age = creationTimestamp ? getClusterAge(creationTimestamp) : "N/A";
+      // Extract conditions
+      const joinedCondition = item.status?.conditions?.find((c: any) => c.type === "ManagedClusterJoined")?.status || "False";
+      const availableCondition = item.status?.conditions?.find((c: any) => c.type === "ManagedClusterConditionAvailable")?.status || "False";
 
-    // Append formatted row
-    result += `${name.padEnd(10)} ${hubAccepted.padEnd(14)} ${server.padEnd(80)} ${joinedCondition.padEnd(8)} ${availableCondition.padEnd(10)} ${age}\n`;
-  });
+      // Calculate cluster age
+      const creationTimestamp = item.metadata?.creationTimestamp;
+      const age = creationTimestamp ? getClusterAge(creationTimestamp) : "N/A";
 
-  return {
-    content: [{
-      type: "text",
-      text: result
-    }],
+      // Append formatted row
+      result += `${name.padEnd(10)} ${hubAccepted.padEnd(14)} ${server.padEnd(80)} ${joinedCondition.padEnd(8)} ${availableCondition.padEnd(10)} ${age}\n`;
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: result
+      }],
+    }
+  } catch (error) {
+    return {
+      content: [{
+        type: "text",
+        text: `Failed to list clusters: ${(error as Error).message}`
+      }],
+      isErrored: true
+    }
   }
 }
 
@@ -82,6 +112,16 @@ export const connectClusterDesc = "Generates the KUBECONFIG for the managed clus
 export async function connectCluster({ cluster, clusterRole = "cluster-admin" }: {
   cluster: string, clusterRole?: string
 }): Promise<CallToolResult> {
+  if (!client) {
+    return {
+      content: [{
+        type: "text",
+        text: "No Kubernetes cluster connection available. Please ensure KUBECONFIG is set and cluster is accessible."
+      }],
+      isErrored: true
+    }
+  }
+
   // https://open-cluster-management.io/docs/getting-started/integration/managed-serviceaccount/
   const mcpServerName = "multicluster-mcp-server"
   const msa = {
@@ -212,6 +252,10 @@ export async function connectCluster({ cluster, clusterRole = "cluster-admin" }:
 
 
 async function getSecretWithRetry(namespace: string, secretName: string, retries: number = 10, delay: number = 2000): Promise<string | k8s.V1Secret> {
+  if (!kc) {
+    throw new Error("No Kubernetes client available");
+  }
+
   const coreApi = kc.makeApiClient(k8s.CoreV1Api);
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -244,34 +288,39 @@ async function manifestWorkAppliedErrorMessage(
   retryIntervalMs = 2000,
   timeoutMs = 30000
 ): Promise<string> {
-  const start = Date.now();
+  const startTime = Date.now();
 
-  while (Date.now() - start < timeoutMs) {
-    const result = await client.read({
-      apiVersion: 'work.open-cluster-management.io/v1',
-      kind: 'ManifestWork',
-      metadata: { name, namespace },
-    }) as any;
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const manifestWork = await client.read({
+        apiVersion: 'work.open-cluster-management.io/v1',
+        kind: 'ManifestWork',
+        metadata: { name, namespace },
+      });
 
-    const manifestsStatus = result.status?.resourceStatus?.manifests ?? [];
+      const status = (manifestWork as any)?.status;
+      if (status?.conditions) {
+        const appliedCondition = status.conditions.find(
+          (condition: any) => condition.type === 'Applied'
+        );
 
-    for (const manifest of manifestsStatus) {
-      const conditions = manifest.conditions ?? [];
-
-      const appliedCondition = conditions.find((cond: any) => cond.type === 'Applied');
-      // console.log(appliedCondition)
-      if (appliedCondition) {
-        return appliedCondition.status === 'False'
-          ? appliedCondition.message ?? 'Unknown error occurred while applying manifest.'
-          : '';
+        if (appliedCondition) {
+          if (appliedCondition.status === 'True') {
+            return ""; // Success, no error
+          } else if (appliedCondition.status === 'False') {
+            return `ManifestWork failed to apply: ${appliedCondition.reason} - ${appliedCondition.message}`;
+          }
+        }
       }
+    } catch (error) {
+      console.warn(`Failed to read ManifestWork: ${error}`);
     }
 
     // Wait before retrying
     await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
   }
 
-  throw new Error(`Timed out waiting for ManifestWork ${name} in ${namespace} to report Applied status.`);
+  return `Timeout waiting for ManifestWork to be applied within ${timeoutMs}ms`;
 }
 
 // async function main() {
