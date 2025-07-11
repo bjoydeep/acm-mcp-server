@@ -1,0 +1,35 @@
+{
+  "name": "PlacementRule",
+  "kind": "PlacementRule",
+  "apiVersion": "apps.open-cluster-management.io/v1",
+  "description": "PlacementRule defines a legacy placement mechanism to select ManagedClusters based on label selectors, cluster conditions, and other custom criteria. Deprecated in favor of Placement.",
+  "categories": ["Placement", "OCM", "Deprecated"],
+  "labels": ["ocm", "placementrule", "legacy"],
+  "usageHint": "Use PlacementRule to select clusters for policy or application deployment. Generally replaced by Placement in newer controllers.",
+  "schema": {
+    "spec": {
+      "clusterSelector": {
+        "matchLabels": {
+          "environment": "prod"
+        }
+      },
+      "clusterReplicas": 1
+    }
+  },
+  "example": {
+    "apiVersion": "apps.open-cluster-management.io/v1",
+    "kind": "PlacementRule",
+    "metadata": {
+      "name": "select-prod-clusters",
+      "namespace": "default"
+    },
+    "spec": {
+      "clusterSelector": {
+        "matchLabels": {
+          "env": "prod"
+        }
+      },
+      "clusterReplicas": 1
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "ManifestWork",
+  "kind": "ManifestWork",
+  "apiVersion": "work.open-cluster-management.io/v1",
+  "description": "Defines a set of Kubernetes resources (manifests) to be applied on a specific managed cluster.",
+  "categories": ["Work", "OCM", "Deployment"],
+  "labels": ["ocm", "work", "manifest"],
+  "usageHint": "Use ManifestWork to deploy manifests to a specific managed cluster from the hub.",
+  "schema": {
+    "spec": {
+      "workload": {
+        "manifests": "array of raw Kubernetes resources to apply on the managed cluster"
+      },
+      "executor": {
+        "subject": {
+          "type": "identity type (e.g., ServiceAccount)",
+          "serviceAccount": {
+            "name": "string",
+            "namespace": "string"
+          }
+        }
+      },
+      "manifestConfigs": "optional feedback and update strategies per resource",
+      "deleteOption": {
+        "propagationPolicy": "Foreground | Orphan | SelectivelyOrphan",
+        "selectivelyOrphans": "specific resources to orphan on deletion (optional)"
+      }
+    },
+    "status": {
+      "conditions": "standard Kubernetes conditions for work status",
+      "resourceStatus": {
+        "manifests": "status and feedback for each manifest applied to the cluster"
+      }
+    }
+  }
+}

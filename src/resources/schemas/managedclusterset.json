@@ -1,0 +1,38 @@
+{
+  "name": "ManagedClusterSet",
+  "kind": "ManagedClusterSet",
+  "apiVersion": "cluster.open-cluster-management.io/v1beta2",
+  "description": "Defines a group of ManagedClusters for workload placement. ManagedClusterSet enforces cluster boundaries and access controls for workloads and services.",
+  "categories": ["Cluster", "Set", "OCM", "Governance"],
+  "labels": ["ocm", "clusterset"],
+  "usageHint": "Use this to define and manage a logical group of ManagedClusters. Workloads and policies can target clusters within the set.",
+  "schema": {
+    "spec": {
+      "clusterSelector": {
+        "selectorType": "string (ExclusiveClusterSetLabel | LabelSelector)",
+        "labelSelector": {
+          "matchLabels": "map<string, string> (optional)",
+          "matchExpressions": [
+            {
+              "key": "string",
+              "operator": "string",
+              "values": "string[] (optional)"
+            }
+          ]
+        }
+      }
+    },
+    "status": {
+      "conditions": [
+        {
+          "type": "string",
+          "status": "True | False | Unknown",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "date-time",
+          "observedGeneration": "int64 (optional)"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "PlacementDecision",
+  "kind": "PlacementDecision",
+  "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+  "description": "PlacementDecision represents the result of a Placement resource. It contains the list of selected ManagedClusters that match the Placement conditions. Each PlacementDecision must be labeled with cluster.open-cluster-management.io/placement=<placement-name> to link it to its Placement.",
+  "categories": ["Cluster", "Scheduling", "OCM"],
+  "labels": ["ocm", "placement", "decision", "cluster-selection"],
+  "usageHint": "This is used internally by OCM to record which ManagedClusters were selected by a Placement. The status.decisions field contains the actual decision list.",
+  "schema": {
+    "status": {
+      "decisions": [
+        {
+          "clusterName": "string (name of selected ManagedCluster)",
+          "reason": "string (why it was selected)"
+        }
+      ]
+    }
+  },
+  "example": {
+    "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+    "kind": "PlacementDecision",
+    "metadata": {
+      "name": "select-prod-clusters-decision-1",
+      "namespace": "default",
+      "labels": {
+        "cluster.open-cluster-management.io/placement": "select-prod-clusters"
+      }
+    },
+    "status": {
+      "decisions": [
+        {
+          "clusterName": "cluster-east-1",
+          "reason": "MatchLabelSelector"
+        },
+        {
+          "clusterName": "cluster-west-1",
+          "reason": "HighestScore"
+        }
+      ]
+    }
+  }
+}

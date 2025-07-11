@@ -1,0 +1,69 @@
+{
+  "name": "Klusterlet",
+  "kind": "Klusterlet",
+  "apiVersion": "operator.open-cluster-management.io/v1",
+  "description": "Klusterlet represents controllers to install the resources for a managed cluster. It requires a bootstrap secret for hub connection and optionally a managed cluster kubeconfig in Hosted mode.",
+  "categories": ["Cluster", "OCM", "Agent", "Registration"],
+  "labels": ["ocm", "klusterlet", "agent"],
+  "usageHint": "Use this CR to install the registration and work agents for a managed cluster. Can operate in Default, Hosted, Singleton, or SingletonHosted modes.",
+  "schema": {
+    "spec": {
+      "clusterName": "string (name of the managed cluster)",
+      "namespace": "string (where to install Klusterlet)",
+      "deployOption": {
+        "mode": "Default | Hosted | Singleton | SingletonHosted"
+      },
+      "externalServerURLs": [
+        {
+          "url": "string",
+          "caBundle": "base64-encoded string (optional)"
+        }
+      ],
+      "hubApiServerHostAlias": {
+        "hostname": "string",
+        "ip": "string"
+      },
+      "imagePullSpec": "string (image URL for agent)",
+      "registrationImagePullSpec": "string (image URL for registration)",
+      "workImagePullSpec": "string (image URL for work agent)",
+      "priorityClassName": "string (optional)",
+      "nodePlacement": {
+        "nodeSelector": "map<string, string>",
+        "tolerations": "list of tolerations"
+      },
+      "registrationConfiguration": {
+        "bootstrapKubeConfigs": {
+          "type": "None | LocalSecrets",
+          "localSecretsConfig": {
+            "hubConnectionTimeoutSeconds": "integer (default 180+)",
+            "kubeConfigSecrets": [
+              { "name": "string" }
+            ]
+          }
+        },
+        "clusterAnnotations": "map<string, string> (optional)",
+        "featureGates": [
+          { "feature": "string", "mode": "Enable | Disable" }
+        ],
+        "kubeAPIQPS": "integer (optional)",
+        "kubeAPIBurst": "integer (optional)",
+        "clientCertExpirationSeconds": "integer (optional)"
+      },
+      "workConfiguration": {
+        "appliedManifestWorkEvictionGracePeriod": "duration (e.g., 30m)",
+        "featureGates": [
+          { "feature": "string", "mode": "Enable | Disable" }
+        ],
+        "kubeAPIQPS": "integer (optional)",
+        "kubeAPIBurst": "integer (optional)"
+      },
+      "resourceRequirement": {
+        "type": "Default | BestEffort | ResourceRequirement",
+        "resourceRequirements": {
+          "limits": "map<string, string>",
+          "requests": "map<string, string>"
+        }
+      }
+    }
+  }
+}

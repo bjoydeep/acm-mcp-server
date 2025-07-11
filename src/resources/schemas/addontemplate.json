@@ -1,0 +1,29 @@
+{
+  "name": "AddOnTemplate",
+  "kind": "AddOnTemplate",
+  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+  "description": "AddOnTemplate describes how to deploy and register an add-on agent to a managed cluster.",
+  "categories": ["OCM", "AddOn", "Template", "Cluster Management"],
+  "labels": ["ocm", "addon", "template"],
+  "usageHint": "Used by OCM hub to define how an addon should be deployed and registered on managed clusters.",
+  "schema": {
+    "spec": {
+      "addonName": "string (name of the addon)",
+      "agentSpec": {
+        "workload": {
+          "manifests": "array<object> (k8s resources to deploy)"
+        },
+        "executor": "object (optional, defines agent execution strategy)",
+        "deleteOption": "object (optional, cleanup behavior)",
+        "manifestConfigs": "array<object> (optional configs for manifests)"
+      },
+      "registration": [
+        {
+          "type": "KubeClient | CustomSigner",
+          "kubeClient": "object (optional)",
+          "customSigner": "object (optional)"
+        }
+      ]
+    }
+  }
+}

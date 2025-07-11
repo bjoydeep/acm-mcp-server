@@ -1,0 +1,64 @@
+{
+  "name": "Placement",
+  "kind": "Placement",
+  "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+  "description": "ACM Placement selects a set of ManagedClusters for workload or policy distribution. It works with ManagedClusterSets, Predicates, and optional PrioritizerPolicy to determine the eligible clusters. PlacementDecisions are created as the selection result and used by PlacementBindings.",
+  "categories": ["Cluster", "Scheduling", "OCM"],
+  "labels": ["ocm", "placement", "cluster-management"],
+  "usageHint": "Use this to select clusters for policies or workloads. You can define clusterSets, label selectors (predicates), prioritization, and spread policies.",
+  "schema": {
+    "spec": {
+      "clusterSets": "string[] (names of ManagedClusterSets)",
+      "numberOfClusters": "integer (optional)",
+      "predicates": [
+        {
+          "requiredClusterSelector": {
+            "labelSelector": {
+              "matchLabels": "map<string, string>",
+              "matchExpressions": "selector expressions (optional)"
+            },
+            "claimSelector": "cluster claim selector (optional)"
+          }
+        }
+      ],
+      "prioritizerPolicy": "prioritization policy (optional)",
+      "spreadPolicy": "distribution policy (optional)",
+      "decisionStrategy": "decision group division strategy (optional)"
+    }
+  },
+  "example": {
+    "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+    "kind": "Placement",
+    "metadata": {
+      "name": "select-prod-clusters",
+      "namespace": "default"
+    },
+    "spec": {
+      "clusterSets": ["prod-clusterset"],
+      "numberOfClusters": 2,
+      "predicates": [
+        {
+          "requiredClusterSelector": {
+            "labelSelector": {
+              "matchLabels": {
+                "environment": "prod"
+              }
+            }
+          }
+        }
+      ],
+      "prioritizerPolicy": {
+        "mode": "Additive",
+        "configurations": [
+          {
+            "scoreCoordinate": {
+              "type": "BuiltIn",
+              "builtIn": "Balance"
+            },
+            "weight": 1
+          }
+        ]
+      }
+    }
+  }
+}

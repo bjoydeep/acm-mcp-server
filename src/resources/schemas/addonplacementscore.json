@@ -1,0 +1,59 @@
+{
+  "name": "AddOnPlacementScore",
+  "kind": "AddOnPlacementScore",
+  "apiVersion": "cluster.open-cluster-management.io/v1alpha1",
+  "description": "Represents placement scores reported by add-ons on a managed cluster. These scores can influence placement decisions by providing metrics such as resource usage or custom logic scores.",
+  "categories": ["Placement", "OCM", "AddOn", "Score"],
+  "labels": ["score", "placement", "addon", "cluster"],
+  "usageHint": "Use this resource to influence OCM placement decisions with custom score values from add-ons. The namespace should match the managed cluster's name.",
+  "schema": {
+    "status": {
+      "conditions": [
+        {
+          "type": "string (e.g., 'Available')",
+          "status": "True | False | Unknown",
+          "reason": "string (reason for last transition)",
+          "message": "string (description of condition)",
+          "lastTransitionTime": "datetime"
+        }
+      ],
+      "scores": [
+        {
+          "name": "string (e.g., 'cpuUsage')",
+          "value": "integer [-100 to 100]"
+        }
+      ],
+      "validUntil": "datetime | null (null means no expiration)"
+    }
+  },
+  "example": {
+    "apiVersion": "cluster.open-cluster-management.io/v1alpha1",
+    "kind": "AddOnPlacementScore",
+    "metadata": {
+      "name": "cluster1-score",
+      "namespace": "cluster1"
+    },
+    "status": {
+      "scores": [
+        {
+          "name": "health",
+          "value": 90
+        },
+        {
+          "name": "cpuPressure",
+          "value": -30
+        }
+      ],
+      "validUntil": "2025-07-11T00:00:00Z",
+      "conditions": [
+        {
+          "type": "ScoreReported",
+          "status": "True",
+          "reason": "AddOnReported",
+          "message": "The score is updated by the add-on",
+          "lastTransitionTime": "2025-07-10T08:00:00Z"
+        }
+      ]
+    }
+  }
+}

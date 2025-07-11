@@ -1,0 +1,50 @@
+{
+  "name": "PlacementBinding",
+  "kind": "PlacementBinding",
+  "apiVersion": "policy.open-cluster-management.io/v1",
+  "description": "PlacementBinding binds a Placement or PlacementRule to one or more Policies or PolicySets. It defines how compliance policies are propagated to selected clusters and supports optional overrides such as remediationAction.",
+  "categories": ["Policy", "Governance", "Placement", "OCM"],
+  "labels": ["ocm", "policy", "placement-binding"],
+  "usageHint": "Use this to associate a Placement (or PlacementRule) with one or more Policies or PolicySets. Optionally override remediationAction for the targets.",
+  "schema": {
+    "placementRef": {
+      "apiGroup": "cluster.open-cluster-management.io",
+      "kind": "Placement",
+      "name": "string"
+    },
+    "subjects": [
+      {
+        "apiGroup": "policy.open-cluster-management.io",
+        "kind": "Policy | PolicySet",
+        "name": "string"
+      }
+    ],
+    "bindingOverrides": {
+      "remediationAction": "Enforce (optional)"
+    },
+    "subFilter": "restricted (optional)"
+  },
+  "example": {
+    "apiVersion": "policy.open-cluster-management.io/v1",
+    "kind": "PlacementBinding",
+    "metadata": {
+      "name": "bind-prod-policy",
+      "namespace": "default"
+    },
+    "placementRef": {
+      "apiGroup": "cluster.open-cluster-management.io",
+      "kind": "Placement",
+      "name": "select-prod-clusters"
+    },
+    "subjects": [
+      {
+        "apiGroup": "policy.open-cluster-management.io",
+        "kind": "Policy",
+        "name": "sample-policy"
+      }
+    ],
+    "bindingOverrides": {
+      "remediationAction": "Enforce"
+    }
+  }
+}

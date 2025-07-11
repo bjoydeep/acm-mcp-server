@@ -1,0 +1,42 @@
+{
+  "name": "PolicySet",
+  "kind": "PolicySet",
+  "apiVersion": "policy.open-cluster-management.io/v1beta1",
+  "description": "PolicySet is a logical grouping of ACM Policies in the same namespace. A PolicySet can be bound to a Placement or PlacementRule to apply a shared placement strategy to all included policies. Its status reflects the overall compliance across all policies.",
+  "categories": ["Policy", "Governance", "OCM"],
+  "labels": ["ocm", "policyset", "policy-grouping"],
+  "usageHint": "Use PolicySet to apply the same placement and binding configuration to a group of related policies. It simplifies management and compliance reporting.",
+  "schema": {
+    "spec": {
+      "description": "string (optional, a human-readable summary of the policy set)",
+      "policies": "string[] (list of policy names)"
+    },
+    "status": {
+      "compliant": "Compliant | NonCompliant | Pending",
+      "placement": [
+        {
+          "placement": "string (Placement name)",
+          "placementBinding": "string (Binding name)",
+          "placementRule": "string (deprecated)"
+        }
+      ],
+      "statusMessage": "string"
+    }
+  },
+  "example": {
+    "apiVersion": "policy.open-cluster-management.io/v1beta1",
+    "kind": "PolicySet",
+    "metadata": {
+      "name": "pci-compliance-set",
+      "namespace": "default"
+    },
+    "spec": {
+      "description": "PCI compliance policies for all production clusters",
+      "policies": [
+        "restrict-root-login",
+        "require-encryption",
+        "limit-ssh-access"
+      ]
+    }
+  }
+}

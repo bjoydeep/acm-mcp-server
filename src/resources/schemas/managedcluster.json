@@ -1,0 +1,51 @@
+{
+  "name": "ManagedCluster",
+  "kind": "ManagedCluster",
+  "apiVersion": "cluster.open-cluster-management.io/v1",
+  "description": "ManagedCluster represents the desired state and current status of a managed cluster in OCM. It is a cluster-scoped resource created by the klusterlet agent during the join process.",
+  "categories": ["Cluster", "OCM", "Registration"],
+  "labels": ["ocm", "managedcluster", "cluster-management"],
+  "usageHint": "Use this to register and manage a Kubernetes cluster as a managed cluster in OCM. Ensure the join process is completed (CSR approval + hubAcceptsClient).",
+  "schema": {
+    "spec": {
+      "hubAcceptsClient": "boolean (whether hub accepts the client, required for activation)",
+      "leaseDurationSeconds": "integer (default 60, lease update interval)",
+      "managedClusterClientConfigs": [
+        {
+          "url": "string (API server URL)",
+          "caBundle": "base64 string (optional)"
+        }
+      ],
+      "taints": [
+        {
+          "key": "string",
+          "value": "string (optional)",
+          "effect": "NoSelect | PreferNoSelect | NoSelectIfNew",
+          "timeAdded": "string (datetime, optional)"
+        }
+      ]
+    },
+    "status": {
+      "capacity": "map<string, string|int> (total resources)",
+      "allocatable": "map<string, string|int> (allocatable resources)",
+      "clusterClaims": [
+        {
+          "name": "string",
+          "value": "string"
+        }
+      ],
+      "conditions": [
+        {
+          "type": "string",
+          "status": "True | False | Unknown",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "string (datetime)"
+        }
+      ],
+      "version": {
+        "kubernetes": "string (e.g., v1.27.0)"
+      }
+    }
+  }
+}

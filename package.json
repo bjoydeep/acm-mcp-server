@@ -1,6 +1,6 @@
 {
   "name": "acm-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This repository aims to build the MCP server for Advanced Cluster Management (ACM).",
   "private": false, 
   "bin": {
@@ -11,26 +11,30 @@
   ],
   "keywords": ["ACM", "MCP", "kubernetes"],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc && cp -r src/resources/schemas build/resources/ && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js"
   },
   "dependencies": {
     "@kubernetes/client-node": "^1.0.0",
-    "@modelcontextprotocol/sdk": "0.6.0"
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "axios": "^1.9.0",
+    "dayjs": "^1.11.13",
+    "zod": "^3.25.61"
   },
   "devDependencies": {
     "@babel/core": "^7.26.9",
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-typescript": "^7.26.0",
+    "@types/axios": "^0.14.4",
     "@types/jest": "^29.5.14",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.19.0",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
-  "author": "",
+  "author": "Meng Yan",
   "license": "ISC"
 }

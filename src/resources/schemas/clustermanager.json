@@ -1,0 +1,64 @@
+{
+  "name": "ClusterManager",
+  "kind": "ClusterManager",
+  "apiVersion": "operator.open-cluster-management.io/v1",
+  "description": "ClusterManager configures the controllers on the hub that govern registration and work distribution for attached Klusterlets.",
+  "categories": ["Cluster", "OCM", "Hub", "Operator"],
+  "labels": ["ocm", "clustermanager", "registration", "work", "hub"],
+  "usageHint": "Use this to install and configure the central controller that manages managed cluster registration, work, and placement on the OCM hub.",
+  "schema": {
+    "spec": {
+      "deployOption": {
+        "mode": "Default | Hosted",
+        "hosted": {
+          "registrationWebhookConfiguration": {
+            "address": "string",
+            "port": "integer"
+          },
+          "workWebhookConfiguration": {
+            "address": "string",
+            "port": "integer"
+          }
+        }
+      },
+      "registrationImagePullSpec": "string (image for registration)",
+      "workImagePullSpec": "string (image for work agent)",
+      "placementImagePullSpec": "string (image for placement controller)",
+      "addOnManagerImagePullSpec": "string (image for addon manager)",
+      "registrationConfiguration": {
+        "autoApproveUsers": "string[] (optional)",
+        "featureGates": [
+          { "feature": "string", "mode": "Enable | Disable" }
+        ],
+        "registrationDrivers": [
+          {
+            "authType": "csr | awsirsa",
+            "hubClusterArn": "string (optional)"
+          }
+        ]
+      },
+      "workConfiguration": {
+        "workDriver": "kube | mqtt | grpc",
+        "featureGates": [
+          { "feature": "string", "mode": "Enable | Disable" }
+        ]
+      },
+      "addOnManagerConfiguration": {
+        "featureGates": [
+          { "feature": "string", "mode": "Enable | Disable" }
+        ]
+      },
+      "nodePlacement": {
+        "nodeSelector": "map<string, string>",
+        "tolerations": "list of toleration objects"
+      },
+      "resourceRequirement": {
+        "type": "Default | BestEffort | ResourceRequirement",
+        "resourceRequirements": {
+          "limits": "map<string, string or int>",
+          "requests": "map<string, string or int>"
+        }
+      }
+    }
+  }
+}

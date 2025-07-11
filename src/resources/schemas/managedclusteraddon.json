@@ -1,0 +1,23 @@
+{
+  "name": "ManagedClusterAddOn",
+  "kind": "ManagedClusterAddOn",
+  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+  "description": "Represents the current state and configuration of an OCM add-on on a managed cluster.",
+  "categories": ["AddOn", "Cluster", "OCM", "Extension"],
+  "labels": ["ocm", "addon", "managed-cluster"],
+  "usageHint": "Use this to define and monitor the lifecycle and configuration of an OCM add-on agent on a managed cluster.",
+  "schema": {
+    "spec": {
+      "configs": [
+        {
+          "group": "string (optional)",
+          "name": "string",
+          "namespace": "string (optional)",
+          "resource": "string"
+        }
+      ],
+      "installNamespace": "string (default: open-cluster-management-agent-addon)"
+    },
+    "status": "object (runtime status, typically includes conditions and registration info)"
+  }
+}

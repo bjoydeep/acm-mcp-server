@@ -1,0 +1,145 @@
+{
+  "name": "ClusterManagementAddOn",
+  "kind": "ClusterManagementAddOn",
+  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+  "scope": "Cluster",
+  "description": "Defines metadata and install strategy for a cluster-scoped add-on in Open Cluster Management. This CRD enables global registration, configuration coordination, and placement-driven rollout of ManagedClusterAddOns.",
+  "categories": ["Addon", "OCM", "ClusterManagement", "InstallStrategy"],
+  "labels": ["addon", "placement", "configuration", "rollout"],
+  "usageHint": "Use this resource to define install strategies, default config references, and placement-driven rollout logic for an OCM-managed add-on across clusters.",
+  "schema": {
+    "spec": {
+      "addOnMeta": {
+        "displayName": "string (UI display name)",
+        "description": "string (detailed explanation of addon)"
+      },
+      "installStrategy": {
+        "type": "Manual | Placements",
+        "placements": [
+          {
+            "name": "placement name",
+            "namespace": "placement namespace",
+            "configs": [
+              {
+                "group": "string",
+                "resource": "string",
+                "name": "string",
+                "namespace": "string"
+              }
+            ],
+            "rolloutStrategy": {
+              "type": "All | Progressive | ProgressivePerGroup",
+              "all": {
+                "maxFailures": "0 | 10% | 3",
+                "minSuccessTime": "30s | 2h",
+                "progressDeadline": "90s | None"
+              }
+            }
+          }
+        ]
+      },
+      "supportedConfigs": [
+        {
+          "group": "string",
+          "resource": "string",
+          "defaultConfig": {
+            "name": "string",
+            "namespace": "string"
+          }
+        }
+      ]
+    },
+    "status": {
+      "defaultconfigReferences": [
+        {
+          "group": "string",
+          "resource": "string",
+          "desiredConfig": {
+            "name": "string",
+            "namespace": "string",
+            "specHash": "string"
+          }
+        }
+      ],
+      "installProgressions": [
+        {
+          "name": "placement name",
+          "namespace": "placement namespace",
+          "conditions": [
+            {
+              "type": "Available | Progressing | Degraded",
+              "status": "True | False | Unknown",
+              "reason": "string",
+              "message": "string",
+              "lastTransitionTime": "datetime"
+            }
+          ],
+          "configReferences": [
+            {
+              "group": "string",
+              "resource": "string",
+              "desiredConfig": {
+                "name": "string",
+                "namespace": "string",
+                "specHash": "string"
+              },
+              "lastAppliedConfig": {
+                "name": "string",
+                "namespace": "string",
+                "specHash": "string"
+              },
+              "lastKnownGoodConfig": {
+                "name": "string",
+                "namespace": "string",
+                "specHash": "string"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "example": {
+    "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+    "kind": "ClusterManagementAddOn",
+    "metadata": {
+      "name": "observability"
+    },
+    "spec": {
+      "addOnMeta": {
+        "displayName": "Observability Addon",
+        "description": "Provides observability metrics for managed clusters."
+      },
+      "installStrategy": {
+        "type": "Placements",
+        "placements": [
+          {
+            "name": "observability-placement",
+            "namespace": "open-cluster-management",
+            "configs": [
+              {
+                "group": "addon.observability.io",
+                "resource": "observabilityconfigs",
+                "name": "default",
+                "namespace": "open-cluster-management"
+              }
+            ],
+            "rolloutStrategy": {
+              "type": "All"
+            }
+          }
+        ]
+      },
+      "supportedConfigs": [
+        {
+          "group": "addon.observability.io",
+          "resource": "observabilityconfigs",
+          "defaultConfig": {
+            "name": "default",
+            "namespace": "open-cluster-management"
+          }
+        }
+      ]
+    }
+  }
+}

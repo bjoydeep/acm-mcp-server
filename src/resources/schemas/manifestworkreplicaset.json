@@ -1,0 +1,44 @@
+{
+  "name": "ManifestWorkReplicaSet",
+  "kind": "ManifestWorkReplicaSet",
+  "apiVersion": "work.open-cluster-management.io/v1alpha1",
+  "description": "Distribute Kubernetes manifests to multiple managed clusters based on Placement decisions.",
+  "categories": ["Work", "Distribution", "OCM"],
+  "labels": ["ocm", "work", "replicaset"],
+  "usageHint": "Use this resource to create and distribute a set of ManifestWorks across clusters selected by Placements. Supports rollout strategies and feedback rules.",
+  "schema": {
+    "spec": {
+      "placementRefs": "array of placement references (each with name and optional rollout strategy)",
+      "manifestWorkTemplate": {
+        "workload": {
+          "manifests": "array of raw Kubernetes resource objects"
+        },
+        "manifestConfigs": "per-resource feedback and update strategies (optional)",
+        "executor": {
+          "subject": {
+            "type": "identity type (e.g., ServiceAccount)",
+            "serviceAccount": {
+              "name": "string",
+              "namespace": "string"
+            }
+          }
+        },
+        "deleteOption": {
+          "propagationPolicy": "Foreground | Orphan | SelectivelyOrphan (optional)",
+          "selectivelyOrphans": "list of resources to orphan (optional)"
+        }
+      }
+    },
+    "status": {
+      "conditions": "standard Kubernetes conditions array",
+      "summary": {
+        "total": "total number of generated ManifestWorks",
+        "applied": "number applied",
+        "available": "number available",
+        "degraded": "number degraded",
+        "progressing": "number progressing"
+      },
+      "placementSummary": "per-placement manifest status summary (optional)"
+    }
+  }
+}

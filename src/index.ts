@@ -1,112 +1,48 @@
 #!/usr/bin/env node
 
-/**
- * This is a template MCP server that implements a simple notes system.
- * It demonstrates core MCP concepts like resources and tools by allowing:
- * - Listing notes as resources
- * - Reading individual notes
- * - Creating new notes via a tool
- * - Summarizing all notes via a prompt
- */
-
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  CallToolResult,
-  CallToolRequest,
-} from "@modelcontextprotocol/sdk/types.js";
-import { toolCallHandlers, KUBE_TOOLS } from "./tools";
+  listClusterDesc, listClustersArgs, listClusters,
+  connectClusterDesc, connectClusterArgs, connectCluster
+} from './tools/clusters';
+import { kubectl, kubectlArgs, kubectlDesc } from "./tools/kubectl";
+import { registerResources } from './resources';
 
-// Suppress all warnings globally
-process.removeAllListeners('warning');
-
-/**
- * Create an MCP server with capabilities for resources (to list/read notes),
- * tools (to create new notes), and prompts (to summarize notes).
- */
-const server = new Server(
-  {
-    name: "acm-mcp-server",
-    version: "0.1.0",
+const server = new McpServer({
+  name: "acm-mcp-server",
+  version: "1.0.1",
+  capabilities: {
+    resources: {},
+    tools: {},
+    // prompts: {},
   },
-  {
-    capabilities: {
-      resources: {},
-      tools: {},
-      prompts: {},
-    },
-  }
-);
+})
 
-/**
- * Handler for listing available notes as resources.
- * Each note is exposed as a resource with:
- * - A note:// URI scheme
- * - Plain text MIME type
- * - Human readable name and description (now including the note title)
- */
-server.setRequestHandler(ListResourcesRequestSchema, async () => {
-  return {
-    resources: []
-  };
-});
+// Register cluster management tools
+server.tool(
+  "clusters",
+  listClusterDesc,
+  listClustersArgs,
+  async (args, extra) => listClusters(args)
+)
 
-/**
- * Handler for reading the contents of a specific note.
- * Takes a note:// URI and returns the note content as plain text.
- */
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-  return {};
-});
+server.tool(
+  "connect_cluster",
+  connectClusterDesc,
+  connectClusterArgs,
+  async (args, extra) => connectCluster(args)
+)
 
-/**
- * Handler that lists available tools.
- * Exposes a single "create_note" tool that lets clients create new notes.
- */
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: KUBE_TOOLS
-  };
-});
+server.tool(
+  "kubectl",
+  kubectlDesc,
+  kubectlArgs,
+  async (args, extra) => kubectl(args)
+)
 
-/**
- * Handler for the create_note tool.
- * Creates a new note with the provided title and content, and returns success message.
- */
-server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-  const handler = toolCallHandlers.get(request.params.name)
-  if (!handler) {
-    throw new Error("Unknown tool");
-  }
-  const result = await handler(request)
-  return result
-});
-
-/**
- * Handler that lists available prompts.
- * Exposes a single "summarize_notes" prompt that summarizes all notes.
- */
-server.setRequestHandler(ListPromptsRequestSchema, async () => {
-  return {
-    prompts: []
-  };
-});
-
-/**
- * Handler for the summarize_notes prompt.
- * Returns a prompt that requests summarization of all notes, with the notes' contents embedded as resources.
- */
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  return {
-    messages: []
-  };
-});
+// Register all ACM resources
+registerResources(server);
 
 /**
  * Start the server using stdio transport.
@@ -115,9 +51,10 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
+  console.error("ACM MCP Server running on stdio");
 }
 
 main().catch((error) => {
-  console.error("Server error:", error);
+  console.error("Fatal error in main():", error);
   process.exit(1);
 });

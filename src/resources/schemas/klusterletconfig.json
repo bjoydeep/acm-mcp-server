@@ -1,0 +1,38 @@
+{
+  "name": "KlusterletConfig",
+  "kind": "KlusterletConfig",
+  "apiVersion": "config.open-cluster-management.io/v1alpha1",
+  "description": "Configuration resource for Klusterlet installation and behavior on managed clusters, including bootstrap settings, install mode, proxy, CA bundles, registries, and node placement.",
+  "categories": ["OCM", "Agent", "Klusterlet", "Configuration"],
+  "labels": ["ocm", "klusterlet", "config"],
+  "usageHint": "Use this to define how Klusterlet is deployed and connects to the hub. Set CA bundles, proxy, install mode, and node scheduling.",
+  "schema": {
+    "spec": {
+      "appliedManifestWorkEvictionGracePeriod": "string (grace period before eviction, e.g., 5m)",
+      "bootstrapKubeConfigs": {
+        "type": "None | LocalSecrets",
+        "localSecretsConfig": {
+          "hubConnectionTimeoutSeconds": "integer (minimum 180)",
+          "kubeConfigSecrets": "[{ name: string }]"
+        }
+      },
+      "hubKubeAPIServerCABundle": "base64 string (optional CA bundle)",
+      "hubKubeAPIServerConfig": {
+        "proxyURL": "string (proxy to hub)",
+        "url": "string (hub API URL)",
+        "serverVerificationStrategy": "UseSystemTruststore | UseAutoDetectedCABundle | UseCustomCABundles",
+        "trustedCABundles": "[{ name: string, caBundle: { name: string, namespace: string } }]"
+      },
+      "installMode": {
+        "type": "default | noOperator",
+        "noOperator.postfix": "string (used for generated names)"
+      },
+      "nodePlacement": {
+        "nodeSelector": "map<string, string>",
+        "tolerations": "[{ key: string, effect: string, value: string, operator: string, tolerationSeconds: int }]"
+      },
+      "pullSecret": "{ name, namespace, uid, ... } (reference to pull secret)",
+      "registries": "[{ mirror: string, source: string (optional) }]"
+    }
+  }
+}

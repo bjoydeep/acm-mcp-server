@@ -1,0 +1,26 @@
+{
+  "name": "ManagedClusterSetBinding",
+  "kind": "ManagedClusterSetBinding",
+  "apiVersion": "cluster.open-cluster-management.io/v1beta2",
+  "description": "Projects a ManagedClusterSet into a specific namespace, enabling workloads in that namespace to be scheduled to clusters within the set.",
+  "categories": ["Cluster", "Binding", "OCM", "AccessControl"],
+  "labels": ["ocm", "clusterset", "binding"],
+  "usageHint": "Use this to bind a ManagedClusterSet into a namespace. Required for workloads in that namespace to access clusters in the set.",
+  "schema": {
+    "spec": {
+      "clusterSet": "string (name of the ManagedClusterSet to bind; must match the resource name)"
+    },
+    "status": {
+      "conditions": [
+        {
+          "type": "string",
+          "status": "True | False | Unknown",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "date-time",
+          "observedGeneration": "int64 (optional)"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "name": "Policy",
+  "kind": "Policy",
+  "apiVersion": "policy.open-cluster-management.io/v1",
+  "description": "ACM Policy is a Governance resource that wraps one or more policy templates (e.g., ConfigurationPolicy, CertificatePolicy) to define and enforce compliance rules on managed clusters. Each policy contains metadata, compliance settings, and a list of policy templates, which are delivered to selected clusters via PlacementBindings.",
+  "categories": ["Governance", "Policy", "ACM"],
+  "labels": ["ocm", "governance", "policy-controller"],
+  "usageHint": "Use this to define compliance rules for Kubernetes resources. Wrap ConfigurationPolicy or CertificatePolicy as policy templates. Specify remediationAction as 'inform' (audit) or 'enforce' (auto-fix).",
+  "schema": {
+    "spec": {
+      "disabled": "boolean",
+      "remediationAction": "string (inform | enforce)",
+      "copyPolicyMetadata": "boolean (optional)",
+      "hubTemplateOptions": {
+        "serviceAccountName": "string (optional)"
+      },
+      "dependencies": [
+        {
+          "name": "string",
+          "compliance": "string (Compliant | Pending | NonCompliant)",
+          "kind": "string",
+          "apiVersion": "string",
+          "namespace": "string (optional)"
+        }
+      ],
+      "policy-templates": [
+        {
+          "objectDefinition": "embedded Kubernetes object",
+          "extraDependencies": "same as dependencies (optional)",
+          "ignorePending": "boolean (optional)"
+        }
+      ]
+    }
+  },
+  "example": {
+    "apiVersion": "policy.open-cluster-management.io/v1",
+    "kind": "Policy",
+    "metadata": {
+      "name": "sample-policy",
+      "namespace": "default"
+    },
+    "spec": {
+      "disabled": false,
+      "remediationAction": "inform",
+      "copyPolicyMetadata": true,
+      "hubTemplateOptions": {
+        "serviceAccountName": ""
+      },
+      "dependencies": [
+        {
+          "name": "config-policy-1",
+          "compliance": "Compliant",
+          "apiVersion": "policy.open-cluster-management.io/v1",
+          "kind": "ConfigurationPolicy",
+          "namespace": "default"
+        }
+      ],
+      "policy-templates": [
+        {
+          "objectDefinition": {
+            "apiVersion": "policy.open-cluster-management.io/v1",
+            "kind": "ConfigurationPolicy",
+            "metadata": {
+              "name": "ensure-configmap"
+            },
+            "spec": {
+              "remediationAction": "inform",
+              "severity": "low",
+              "object-templates": [
+                {
+                  "complianceType": "musthave",
+                  "objectDefinition": {
+                    "apiVersion": "v1",
+                    "kind": "ConfigMap",
+                    "metadata": {
+                      "name": "my-config",
+                      "namespace": "default"
+                    },
+                    "data": {
+                      "foo": "bar"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "extraDependencies": [
+            {
+              "name": "certificate-policy-1",
+              "compliance": "Compliant",
+              "apiVersion": "policy.open-cluster-management.io/v1",
+              "kind": "CertificatePolicy",
+              "namespace": "default"
+            }
+          ],
+          "ignorePending": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "KlusterletAddonConfig",
+  "kind": "KlusterletAddonConfig",
+  "apiVersion": "agent.open-cluster-management.io/v1",
+  "description": "Defines which add-ons to enable on a managed cluster and how they behave.",
+  "categories": ["Add-on", "Klusterlet", "OCM", "Configuration"],
+  "labels": ["ocm", "addon", "klusterlet", "config"],
+  "usageHint": "Use this to enable and configure built-in ACM add-ons like ApplicationManager, PolicyController, etc., on a managed cluster.",
+  "schema": {
+    "spec": {
+      "applicationManager": {
+        "enabled": "boolean",
+        "proxyPolicy": "Disabled | OCPGlobalProxy | CustomProxy (optional)"
+      },
+      "certPolicyController": {
+        "enabled": "boolean",
+        "proxyPolicy": "Disabled | OCPGlobalProxy | CustomProxy (optional)"
+      },
+      "policyController": {
+        "enabled": "boolean",
+        "proxyPolicy": "Disabled | OCPGlobalProxy | CustomProxy (optional)"
+      },
+      "searchCollector": {
+        "enabled": "boolean",
+        "proxyPolicy": "Disabled | OCPGlobalProxy | CustomProxy (optional)"
+      },
+      "proxyConfig": {
+        "httpProxy": "string (optional)",
+        "httpsProxy": "string (optional)",
+        "noProxy": "string (optional)"
+      }
+    }
+  }
+}

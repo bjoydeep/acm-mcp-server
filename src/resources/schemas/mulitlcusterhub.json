@@ -1,0 +1,80 @@
+{
+  "name": "MultiClusterHub",
+  "kind": "MultiClusterHub",
+  "apiVersion": "operator.open-cluster-management.io/v1",
+  "description": "MultiClusterHub is the core resource for deploying and managing the Open Cluster Management hub. It controls the installation of all hub components and can be customized to meet HA, deployment, and upgrade needs.",
+  "categories": ["OCM", "Hub", "Operator", "Governance"],
+  "labels": ["ocm", "multiclusterhub", "operator", "management"],
+  "usageHint": "Deploy a MultiClusterHub resource in your hub cluster namespace to install or upgrade the OCM hub components.",
+  "schema": {
+    "spec": {
+      "availabilityConfig": "string (High or Basic)",
+      "disableHubSelfManagement": "boolean (optional)",
+      "disableUpdateClusterImageSets": "boolean (optional)",
+      "imagePullSecret": "string (optional)",
+      "nodeSelector": "map<string, string> (optional)",
+      "tolerations": [
+        {
+          "key": "string",
+          "operator": "string",
+          "value": "string",
+          "effect": "string",
+          "tolerationSeconds": "int64"
+        }
+      ],
+      "overrides": {
+        "imagePullPolicy": "string (optional)",
+        "components": [
+          {
+            "name": "string",
+            "enabled": "boolean",
+            "configOverrides": {
+              "deployments": [
+                {
+                  "name": "string",
+                  "containers": [
+                    {
+                      "name": "string",
+                      "env": [
+                        {
+                          "name": "string",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "status": {
+      "phase": "string",
+      "currentVersion": "string",
+      "desiredVersion": "string",
+      "conditions": [
+        {
+          "type": "string",
+          "status": "string",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "date-time",
+          "lastUpdateTime": "date-time"
+        }
+      ],
+      "components": {
+        "*": {
+          "name": "string",
+          "kind": "string",
+          "status": "string",
+          "type": "string",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "date-time"
+        }
+      }
+    }
+  }
+}

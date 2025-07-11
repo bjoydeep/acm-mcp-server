@@ -1,0 +1,115 @@
+{
+  "name": "AddOnDeploymentConfig",
+  "kind": "AddOnDeploymentConfig",
+  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+  "description": "Defines customization options for deploying add-on agents on managed clusters. This includes agent install namespace, scheduling rules, proxy settings, image overrides, and resource requirements.",
+  "categories": ["Addon", "OCM"],
+  "labels": ["addon", "deployment", "configuration", "ocm"],
+  "usageHint": "Use AddOnDeploymentConfig to control where and how add-on agents are deployed. Supports node placement, image mirror, proxy, and custom variables.",
+  "schema": {
+    "spec": {
+      "agentInstallNamespace": "string (namespace to install agent)",
+      "customizedVariables": [
+        {
+          "name": "string",
+          "value": "string"
+        }
+      ],
+      "nodePlacement": {
+        "nodeSelector": {
+          "key": "value"
+        },
+        "tolerations": [
+          {
+            "key": "string",
+            "operator": "Exists | Equal",
+            "value": "string",
+            "effect": "NoSchedule | PreferNoSchedule | NoExecute",
+            "tolerationSeconds": "integer"
+          }
+        ]
+      },
+      "proxyConfig": {
+        "httpProxy": "string",
+        "httpsProxy": "string",
+        "noProxy": "string",
+        "caBundle": "base64 string"
+      },
+      "registries": [
+        {
+          "source": "string",
+          "mirror": "string"
+        }
+      ],
+      "resourceRequirements": [
+        {
+          "containerID": "string (e.g. deployments:addon-agent:agent)",
+          "resources": {
+            "requests": {
+              "cpu": "string",
+              "memory": "string"
+            },
+            "limits": {
+              "cpu": "string",
+              "memory": "string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "example": {
+    "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+    "kind": "AddOnDeploymentConfig",
+    "metadata": {
+      "name": "addon-deploy-config",
+      "namespace": "default"
+    },
+    "spec": {
+      "agentInstallNamespace": "open-cluster-management-agent-addon",
+      "customizedVariables": [
+        {
+          "name": "LOG_LEVEL",
+          "value": "debug"
+        }
+      ],
+      "nodePlacement": {
+        "nodeSelector": {
+          "node-role.kubernetes.io/infra": ""
+        },
+        "tolerations": [
+          {
+            "key": "node-role.kubernetes.io/infra",
+            "operator": "Exists",
+            "effect": "NoSchedule"
+          }
+        ]
+      },
+      "proxyConfig": {
+        "httpProxy": "http://proxy.example.com",
+        "noProxy": "localhost,127.0.0.1"
+      },
+      "registries": [
+        {
+          "source": "quay.io/open-cluster-management/addon-agent",
+          "mirror": "quay.io/ocm/addon-agent"
+        }
+      ],
+      "resourceRequirements": [
+        {
+          "containerID": "deployments:addon-agent:agent",
+          "resources": {
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "limits": {
+              "cpu": "500m",
+              "memory": "256Mi"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

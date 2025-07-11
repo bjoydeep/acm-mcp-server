@@ -1,0 +1,35 @@
+{
+  "name": "ManagedClusterView",
+  "kind": "ManagedClusterView",
+  "apiVersion": "view.open-cluster-management.io/v1beta1",
+  "description": "ManagedClusterView is used to retrieve or watch arbitrary Kubernetes resources from a managed cluster.",
+  "categories": ["Cluster", "View", "OCM"],
+  "labels": ["ocm", "view", "managedclusterview"],
+  "usageHint": "Use this to retrieve the live state of a resource (like a Pod or ConfigMap) from a managed cluster. Define the target resource in the spec.scope section.",
+  "schema": {
+    "spec": {
+      "scope": {
+        "apiGroup": "string (optional)",
+        "version": "string",
+        "resource": "string",
+        "kind": "string (optional)",
+        "name": "string",
+        "namespace": "string (optional)",
+        "updateIntervalSeconds": "integer (optional)"
+      }
+    },
+    "status": {
+      "conditions": [
+        {
+          "type": "string",
+          "status": "True | False | Unknown",
+          "reason": "string",
+          "message": "string",
+          "lastTransitionTime": "date-time",
+          "observedGeneration": "int64 (optional)"
+        }
+      ],
+      "result": "raw Kubernetes object (live resource content from managed cluster)"
+    }
+  }
+}
