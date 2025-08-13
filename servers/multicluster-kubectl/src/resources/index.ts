@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { resourceManager } from './api';
+import { resourceManager } from './ResourceManager';
 
 // Register all ACM resources with the MCP server
 export function registerResources(server: McpServer): void {
