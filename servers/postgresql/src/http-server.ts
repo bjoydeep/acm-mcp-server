@@ -200,7 +200,7 @@ class HTTPMCPServer {
               tools: [
                 {
                   name: 'query_database',
-                  description: 'Execute a SQL query and return results',
+                  description: 'Execute a SQL query against the ACM database containing Kubernetes resources from all managed clusters in the fleet',
                   inputSchema: {
                     type: 'object',
                     properties: {
@@ -224,7 +224,7 @@ class HTTPMCPServer {
                 },
                 {
                   name: 'get_database_stats',
-                  description: 'Get database statistics and information',
+                  description: 'Get statistics about the ACM database containing Kubernetes resources from all managed clusters in the fleet',
                   inputSchema: {
                     type: 'object',
                     properties: {}
@@ -232,7 +232,7 @@ class HTTPMCPServer {
                 },
                 {
                   name: 'list_tables',
-                  description: 'Get a list of all tables in the database',
+                  description: 'Get a list of all tables in the ACM database that stores Kubernetes resources from managed clusters',
                   inputSchema: {
                     type: 'object',
                     properties: {
@@ -246,7 +246,7 @@ class HTTPMCPServer {
                 },
                 {
                   name: 'search_tables',
-                  description: 'Search for tables by name',
+                  description: 'Search for tables by name in the ACM database containing Kubernetes resources from managed clusters',
                   inputSchema: {
                     type: 'object',
                     properties: {
@@ -256,6 +256,85 @@ class HTTPMCPServer {
                       }
                     },
                     required: ['searchTerm']
+                  }
+                },
+                {
+                  name: 'find_resources',
+                  description: 'Find and analyze Kubernetes resources across ACM managed clusters with advanced filtering, counting, and health analysis',
+                  inputSchema: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        description: 'Resource kind (Pod, Deployment, Service, ManagedCluster, etc.)'
+                      },
+                      name: {
+                        type: 'string',
+                        description: 'Resource name (exact match or shell-style pattern with * and ?)'
+                      },
+                      namespace: {
+                        type: 'string',
+                        description: 'Namespace name or comma-separated list'
+                      },
+                      cluster: {
+                        type: 'string',
+                        description: 'Cluster name or comma-separated list'
+                      },
+                      labelSelector: {
+                        type: 'string',
+                        description: 'Kubernetes label selector: "app=nginx,env!=test"'
+                      },
+                      clusterSelector: {
+                        type: 'string',
+                        description: 'Filter by cluster labels: "env=prod,cloud=AWS"'
+                      },
+                      status: {
+                        type: 'string',
+                        description: 'Status filter: "Running,Failed" or "CrashLoopBackOff"'
+                      },
+                      textSearch: {
+                        type: 'string',
+                        description: 'Search across all resource fields'
+                      },
+                      ageNewerThan: {
+                        type: 'string',
+                        description: 'Resources newer than: "1h", "2d", "1w"'
+                      },
+                      ageOlderThan: {
+                        type: 'string',
+                        description: 'Resources older than: "1h", "2d", "1w"'
+                      },
+                      outputMode: {
+                        type: 'string',
+                        enum: ['list', 'count', 'summary', 'health'],
+                        default: 'list',
+                        description: 'Output format: list=detailed table, count=aggregated counts, summary=overview, health=status focus'
+                      },
+                      groupBy: {
+                        type: 'string',
+                        description: 'Group results by: status, namespace, cluster, kind, or label:key'
+                      },
+                      countOnly: {
+                        type: 'boolean',
+                        description: 'Return only count numbers, no details'
+                      },
+                      limit: {
+                        type: 'number',
+                        default: 50,
+                        description: 'Max results for list mode (1-1000)'
+                      },
+                      sortBy: {
+                        type: 'string',
+                        default: 'name',
+                        description: 'Sort by: name, created, namespace, cluster'
+                      },
+                      sortOrder: {
+                        type: 'string',
+                        enum: ['asc', 'desc'],
+                        default: 'asc',
+                        description: 'Sort direction'
+                      }
+                    }
                   }
                 }
               ]

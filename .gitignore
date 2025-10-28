@@ -131,3 +131,35 @@ servers/postgresql/2025-08-08-caveat-the-messages-below-were-generated-by-the-u.
 
 #backup readme
 servers/postgresql/README_bup.md
+
+# S2I legacy files (kept as backup)
+servers/postgresql/**/*.old
+servers/postgresql/Makefile.old
+
+# S2I build artifacts (legacy)
+servers/postgresql/.build-*
+servers/postgresql/.deploy
+servers/postgresql/.imagestreams
+servers/postgresql/.buildconfigs
+servers/postgresql/.namespace
+servers/postgresql/.rbac
+servers/postgresql/.secret
+
+# Container build artifacts
+servers/postgresql/.build-docker
+servers/postgresql/.deploy-docker
+servers/postgresql/.namespace-docker
+servers/postgresql/.rbac-docker
+servers/postgresql/.secret-docker
+servers/postgresql/.deploy-prebuilt
+
+# Analysis and report files (temporary)
+buddy-report.md
+FIND_RESOURCES_ENHANCEMENT_PLAN.md
+postgresql-security-analysis-v2.md
+postgresql-security-analysis.md
+security-analysis-report-corrected.md
+security-analysis-report.md
+CLAUDE.md 
+.mcp.json
+graph/

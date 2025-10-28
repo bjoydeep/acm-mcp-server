@@ -1,23 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres-mcp-server
-  namespace: mcp-server
+  name: acm-search-mcp-server
+  namespace: acm-search
   labels:
-    app: postgres-mcp-server
+    app: acm-search-mcp-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres-mcp-server
+      app: acm-search-mcp-server
   template:
     metadata:
       labels:
-        app: postgres-mcp-server
+        app: acm-search-mcp-server
     spec:
+      serviceAccountName: acm-search-mcp-server
       containers:
+      # Auth proxy sidecar
+      - name: auth-proxy
+        image: quay.io/bjoydeep/acm-search-auth-proxy:latest
+        ports:
+        - containerPort: 8080
+          name: public
+        # Service account token is automatically mounted at /var/run/secrets/kubernetes.io/serviceaccount
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+            
+      # Main MCP server (unchanged)
       - name: postgres-mcp-server
-        image: image-registry.openshift-image-registry.svc:5000/mcp-server/postgres-mcp-server:latest
+        image: quay.io/bjoydeep/acm-search-mcp-server:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
@@ -26,7 +43,7 @@ spec:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: postgres-mcp-secret
+              name: acm-search-mcp-secret
               key: database-url
         - name: PORT
           value: "3000"
@@ -51,20 +68,22 @@ spec:
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
+
+      # No volumes needed - service account token is automatically mounted
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-mcp-server-service
-  namespace: mcp-server
+  name: acm-search-mcp-server-service
+  namespace: acm-search
   labels:
-    app: postgres-mcp-server
+    app: acm-search-mcp-server
 spec:
   selector:
-    app: postgres-mcp-server
+    app: acm-search-mcp-server
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8080
     protocol: TCP
     name: http
   type: ClusterIP
@@ -72,15 +91,16 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: postgres-mcp-server-route
-  namespace: mcp-server
+  name: acm-search-mcp-server-route
+  namespace: acm-search
   labels:
-    app: postgres-mcp-server
+    app: acm-search-mcp-server
 spec:
   to:
     kind: Service
-    name: postgres-mcp-server-service
+    name: acm-search-mcp-server-service
   port:
     targetPort: http
   tls:
-    termination: edge 
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

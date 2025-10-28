@@ -27,8 +27,8 @@ class PostgresMCPServer {
     this.server.registerTool(
       'query_database',
       {
-        title: 'Query Database',
-        description: 'Execute a SQL query and return results',
+        title: 'Query ACM Database',
+        description: 'Execute a SQL query against the ACM database containing Kubernetes resources from all managed clusters in the fleet',
         inputSchema: {
           sql: z.string().describe('The SQL query to execute'),
           parameters: z.array(z.string()).optional().describe('Query parameters (for parameterized queries)'),
@@ -56,11 +56,18 @@ class PostgresMCPServer {
         } catch (error) {
           console.error('Query error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+          // Check if this is a security validation error
+          const isSecurityError = errorMessage.includes('Security validation failed');
+          const helpText = isSecurityError
+            ? '\n\n**Security Policy**: This MCP server only allows read-only SELECT queries to protect your ACM data from accidental modifications.'
+            : '\n\nPlease check your SQL syntax and ensure the query is valid for PostgreSQL.';
+
           return {
             content: [
               {
                 type: 'text',
-                text: `Query failed: ${errorMessage}\n\nPlease check your SQL syntax and ensure the query is valid for PostgreSQL.`,
+                text: `Query failed: ${errorMessage}${helpText}`,
               },
             ],
             isError: true,
@@ -73,8 +80,8 @@ class PostgresMCPServer {
     this.server.registerTool(
       'list_tables',
       {
-        title: 'List Tables',
-        description: 'Get a list of all tables in the database',
+        title: 'List ACM Database Tables',
+        description: 'Get a list of all tables in the ACM database that stores Kubernetes resources from managed clusters',
         inputSchema: {
           schema: z.string().optional().default('public').describe('Schema name to filter by'),
         },
@@ -180,18 +187,18 @@ class PostgresMCPServer {
     this.server.registerTool(
       'get_database_stats',
       {
-        title: 'Get Database Stats',
-        description: 'Get database statistics and information',
+        title: 'Get ACM Database Stats',
+        description: 'Get statistics about the ACM database containing Kubernetes resources from all managed clusters in the fleet',
         inputSchema: {},
       },
       async () => {
         const stats = await this.dbQueries.getDatabaseStats();
-        
+
         return {
           content: [
             {
               type: 'text',
-              text: `## Database Statistics\n\n- **Tables:** ${stats.tableCount}\n- **Total Rows:** ${stats.totalRows.toLocaleString()}\n- **Database Size:** ${stats.databaseSize}\n- **Active Connections:** ${stats.activeConnections}`,
+              text: `## Database Statistics\n\n- **Tables:** ${stats.tableCount}\n- **Total Rows:** ${stats.totalRows.toLocaleString()}\n- **Database Size:** ${stats.databaseSize}\n- **Search Schema Size:** ${stats.searchSchemaSize}\n- **Resources Table Size:** ${stats.resourcesTableSize}\n- **Edges Table Size:** ${stats.edgesTableSize}\n- **Active Connections:** ${stats.activeConnections}`,
             },
           ],
         };
@@ -202,8 +209,8 @@ class PostgresMCPServer {
     this.server.registerTool(
       'search_tables',
       {
-        title: 'Search Tables',
-        description: 'Search for tables by name',
+        title: 'Search ACM Database Tables',
+        description: 'Search for tables by name in the ACM database containing Kubernetes resources from managed clusters',
         inputSchema: {
           searchTerm: z.string().describe('Search term to match table names'),
         },
@@ -234,6 +241,49 @@ class PostgresMCPServer {
             },
           ],
         };
+      }
+    );
+
+    // Enhanced Find resources tool
+    this.server.registerTool(
+      'find_resources',
+      {
+        title: 'Find ACM Resources',
+        description: 'Find and analyze Kubernetes resources across ACM managed clusters with advanced filtering, counting, and health analysis',
+        inputSchema: {
+          // Basic filters
+          kind: z.string().optional().describe('Resource kind (Pod, Deployment, Service, ManagedCluster, etc.)'),
+          name: z.string().optional().describe('Resource name (exact match or shell-style pattern with * and ?)'),
+          namespace: z.string().optional().describe('Namespace name or comma-separated list'),
+          cluster: z.string().optional().describe('Cluster name or comma-separated list'),
+
+          // Advanced filters
+          labelSelector: z.string().optional().describe('Kubernetes label selector: "app=nginx,env!=test"'),
+          clusterSelector: z.string().optional().describe('Filter by cluster labels: "env=prod,cloud=AWS"'),
+          status: z.string().optional().describe('Status filter: "Running,Failed" or "CrashLoopBackOff"'),
+          textSearch: z.string().optional().describe('Search across all resource fields'),
+
+          // Time filters
+          ageNewerThan: z.string().optional().describe('Resources newer than: "1h", "2d", "1w"'),
+          ageOlderThan: z.string().optional().describe('Resources older than: "1h", "2d", "1w"'),
+
+          // Output control
+          outputMode: z.enum(['list', 'count', 'summary', 'health']).optional().default('list')
+            .describe('Output format: list=detailed table, count=aggregated counts, summary=overview, health=status focus'),
+          groupBy: z.string().optional().describe('Group results by: status, namespace, cluster, kind, or label:key'),
+          countOnly: z.boolean().optional().describe('Return only count numbers, no details'),
+          limit: z.number().optional().default(50).describe('Max results for list mode (1-1000)'),
+          sortBy: z.string().optional().default('name').describe('Sort by: name, created, namespace, cluster'),
+          sortOrder: z.enum(['asc', 'desc']).optional().default('asc').describe('Sort direction')
+        },
+      },
+      async (args) => {
+        const enhancedFindResources = await import('./find-resources/core.js');
+        const core = new enhancedFindResources.FindResourcesCore(this.dbQueries);
+        const result = await core.findResources(args);
+
+        const formatter = await import('./find-resources/formatters.js');
+        return formatter.FindResourcesFormatter.formatResult(result);
       }
     );
   }
@@ -282,6 +332,7 @@ class PostgresMCPServer {
       .replace(/\r/g, '');
   }
 
+
   async run() {
     // Test database connection
     const isConnected = await this.dbConnection.testConnection();
@@ -318,7 +369,7 @@ class PostgresMCPServer {
           content: [
             {
               type: 'text',
-              text: `## Database Statistics\n\n- **Tables:** ${stats.tableCount}\n- **Total Rows:** ${stats.totalRows.toLocaleString()}\n- **Database Size:** ${stats.databaseSize}\n- **Active Connections:** ${stats.activeConnections}`,
+              text: `## Database Statistics\n\n- **Tables:** ${stats.tableCount}\n- **Total Rows:** ${stats.totalRows.toLocaleString()}\n- **Database Size:** ${stats.databaseSize}\n- **Search Schema Size:** ${stats.searchSchemaSize}\n- **Resources Table Size:** ${stats.resourcesTableSize}\n- **Edges Table Size:** ${stats.edgesTableSize}\n- **Active Connections:** ${stats.activeConnections}`,
             },
           ],
         };
@@ -371,6 +422,13 @@ class PostgresMCPServer {
             },
           ],
         };
+      case 'find_resources':
+        const enhancedFindResources = await import('./find-resources/core.js');
+        const core = new enhancedFindResources.FindResourcesCore(this.dbQueries);
+        const findResult = await core.findResources(args);
+
+        const formatter = await import('./find-resources/formatters.js');
+        return formatter.FindResourcesFormatter.formatResult(findResult);
       default:
         throw new Error(`Unknown tool: ${toolName}`);
     }
@@ -379,9 +437,10 @@ class PostgresMCPServer {
   getAvailableTools(): string[] {
     return [
       'query_database',
-      'get_database_stats', 
+      'get_database_stats',
       'list_tables',
-      'search_tables'
+      'search_tables',
+      'find_resources'
     ];
   }
 
